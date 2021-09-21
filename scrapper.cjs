@@ -1,6 +1,5 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { Console } = require('console');
 const fs = require('fs');
 
 const URL = 'https://www.prada.com';
@@ -63,14 +62,15 @@ fetchProductsLinks = async (fullMenuLink) => {
 };
 
 parseProductsLinks = async (products) => {
+  let totalCount = 0;
   try {
-    let totalCount = 0;
     for (let productLink of productsLinks) {
       productDetail = await fetchProductDetail(URL + productLink);
       if (productDetail) {
         products[productDetail.productCode] = productDetail;
         products['productCount'] += 1;
         totalCount += 1;
+        console.log(totalCount);
       }
     }
   } catch (error) {
@@ -83,10 +83,9 @@ parseProductsLinks = async (products) => {
 fetchProductDetail = async (productLink) => {
   try {
     let productDetail = {};
-    console.log(new Date());
+
     const { data } = await axios.get(productLink);
     const $ = cheerio.load(data);
-    console.log(new Date());
 
     let breadcrumb = [];
     $('.breadcrumbs__link').each((index, content) => {
@@ -121,7 +120,7 @@ fetchProductDetail = async (productLink) => {
 
 save = async (productDetail) => {
   const productJson = JSON.stringify(productDetail) + '\n';
-  fs.writeFile('product.json', productJson, (err) => {
+  fs.writeFile('products.json', productJson, (err) => {
     if (err) {
       throw err;
     }
@@ -139,7 +138,7 @@ splitGenderAndCatagory = (menuLink) => {
 
 fetchPrada = async () => {
   try {
-    let productsRecord = { totalCount: 0 };
+    let productsRecord = { totalProducts: 0 };
     let menuLinks = await fetchMenuLinks();
 
     for (let menuLink of menuLinks) {
@@ -155,11 +154,11 @@ fetchPrada = async () => {
 
       productsRecord[gender][catagory] = products;
       productsRecord[gender]['totalCount'] += totalCount;
-      productsRecord['totalCount'] += productsRecord[gender]['totalCount'];
+      productsRecord['totalProducts'] += productsRecord[gender]['totalCount'];
       hasSaved = await save(productsRecord);
     }
   } catch (error) {
-    Console.error('Fetch Parada Error: ', error.message);
+    console.error('Fetch Parada Error: ', error.message);
   }
 };
 
