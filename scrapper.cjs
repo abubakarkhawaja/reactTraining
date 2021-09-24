@@ -1,13 +1,13 @@
+require('dotenv').config({ path: './.env' });
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
-const URL = 'https://www.prada.com';
-
 fetchMenuLinks = async () => {
   try {
     let menuLinks = [];
-    const { data } = await axios.get(URL);
+    const { data } = await axios.get(process.env['URL']);
     const $ = cheerio.load(data);
 
     $('ul.submenu__cont-inner').each((index, navBarMenu) => {
@@ -34,8 +34,8 @@ parsePagination = async (fullMenuLink) => {
     totalProducts = Number(
       $('.externalWrapperFilter').attr('data-total-products')
     );
-
-    totalPages = Math.ceil(totalProducts / 24);
+    productsPerPage = 24;
+    totalPages = Math.ceil(totalProducts / productsPerPage);
     for (let page = 1; page <= totalPages; page++) {
       links = await fetchProductsLinks(fullMenuLink + `?page=${page}`);
       productsLinks = productsLinks.concat(links);
@@ -65,7 +65,9 @@ parseProductsLinks = async (products) => {
   let totalCount = 0;
   try {
     for (let productLink of productsLinks) {
-      productDetail = await fetchProductDetail(URL + productLink);
+      const productDetail = await fetchProductDetail(
+        process.env['URL'] + productLink
+      );
       if (productDetail) {
         products[productDetail.productCode] = productDetail;
         products['productCount'] += 1;
@@ -136,7 +138,7 @@ splitGenderAndCatagory = (menuLink) => {
   return [gender, catagory];
 };
 
-fetchPrada = async () => {
+(fetchPrada = async () => {
   try {
     let productsRecord = { totalProducts: 0 };
     let menuLinks = await fetchMenuLinks();
@@ -149,7 +151,7 @@ fetchPrada = async () => {
         productsRecord[gender] = { totalCount: 0 };
       productsRecord[gender][catagory] = {};
 
-      productsLinks = await parsePagination(URL + menuLink);
+      productsLinks = await parsePagination(process.env['URL'] + menuLink);
       let totalCount = await parseProductsLinks(products);
 
       productsRecord[gender][catagory] = products;
@@ -160,6 +162,4 @@ fetchPrada = async () => {
   } catch (error) {
     console.error('Fetch Parada Error: ', error.message);
   }
-};
-
-fetchPrada();
+})();

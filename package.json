@@ -1,0 +1,25 @@
+{
+  "name": "scraping",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./reactTraining/scrapper.cjs",
+    "clean": "rm -r dist && mkdir dist",
+    "build": "npm run clean && webpack ./scrapper.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.4",
+    "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^10.0.0",
+    "react-scripts": "^4.0.3",
+    "webpack": "^5.53.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^4.8.0"
+  }
+}
